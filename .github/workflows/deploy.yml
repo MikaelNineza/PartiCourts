@@ -1,0 +1,60 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+
+      - name: Install dependencies
+        working-directory: webapp
+        run: npm ci
+
+      - name: Build
+        working-directory: webapp
+        run: npm run build
+
+      # webapp/public/sources/*.geojson is a local dev fixture, checked into
+      # git for `npm run dev`. In production that path is served from S3,
+      # kept up to date by the scraper/geo_builder Lambda -- strip the
+      # build's copy so a site deploy can never overwrite the Lambda's data.
+      - name: Remove bundled dev fixture data
+        run: rm -rf webapp/dist/sources
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Sync site to S3
+        run: |
+          aws s3 sync webapp/dist s3://particourts-data \
+            --delete \
+            --exclude "boundaries/*" \
+            --exclude "snapshots/*" \
+            --exclude "sources/*"
+
+      - name: Invalidate CloudFront cache
+        run: aws cloudfront create-invalidation --distribution-id ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
