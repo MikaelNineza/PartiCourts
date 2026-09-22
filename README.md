@@ -44,4 +44,6 @@ npm run dev
 
 ## Deployment
 
-The `static` branch deploys to GitHub Pages automatically on every push, via `.github/workflows/deploy.yml`.
+Pushing to `main` builds the webapp and deploys it to S3 + CloudFront, via `.github/workflows/deploy.yml`. The scraper and geo_builder run separately, on a monthly schedule, as a Lambda function (see `docs/aws-architecture.md`).
+
+The `static` branch's GitHub Pages workflow is no longer active; it's kept around for history.
