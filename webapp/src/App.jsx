@@ -13,6 +13,8 @@ const COURT_TYPES = {
   },
 };
 
+const CURRENT_PRESIDENT_PARTY = 'republican';
+
 const MODES = {
   partisanship: {
     label: 'Partisanship',
@@ -45,7 +47,7 @@ const MODES = {
   },
   filled: {
     label: 'Filled vacancies',
-    description: 'Balance if open seats were filled',
+    description: `Balance if the current ${CURRENT_PRESIDENT_PARTY === 'democratic' ? 'Democratic' : 'Republican'} president filled open seats`,
     legend: [
       ['Democratic majority', '#2e78a8'],
       ['Republican majority', '#c9574d'],
@@ -64,7 +66,8 @@ function getNumber(value) {
 function getFeatureValue(feature, mode) {
   const properties = feature.properties ?? {};
   if (mode === 'filled') {
-    const balance = getNumber(properties.DEMJUDGES) - getNumber(properties.GOPJUDGES) - getNumber(properties.VACANCIES);
+    const vacancySign = CURRENT_PRESIDENT_PARTY === 'democratic' ? 1 : -1;
+    const balance = getNumber(properties.DEMJUDGES) - getNumber(properties.GOPJUDGES) + vacancySign * getNumber(properties.VACANCIES);
     return balance > 0 ? 1 : balance < 0 ? -1 : 0;
   }
   if (mode === 'retirements') {
