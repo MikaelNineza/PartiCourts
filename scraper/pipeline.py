@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -33,10 +32,8 @@ def collect_snapshot(
     government = government or GovernmentClient()
     courts = wikipedia.fetch_circuit_courts() + wikipedia.fetch_district_courts()
     current_year = datetime.now(UTC).year
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        judges_by_court = executor.map(wikipedia.fetch_judges, courts)
-    for court, judges in zip(courts, judges_by_court):
-        court.judges = judges
+    for court in courts:
+        court.judges = wikipedia.fetch_judges(court)
         court.senior_eligible_judges = sum(
             is_senior_eligible(judge.year_of_birth, judge.appointment_year, current_year)
             for judge in court.judges
