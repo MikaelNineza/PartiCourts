@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass, field
+from functools import cached_property
 from typing import Any
 
 
@@ -42,13 +43,23 @@ class Court:
     def vacancies(self) -> int:
         return max(self.max_judges - self.active_judges, 0)
 
+    @cached_property
+    def _partisan_counts(self) -> tuple[int, int]:
+        dem_count = gop_count = 0
+        for judge in self.judges:
+            if judge.partisanship == 1:
+                dem_count += 1
+            elif judge.partisanship == -1:
+                gop_count += 1
+        return dem_count, gop_count
+
     @property
     def democratic_judges(self) -> int:
-        return sum(judge.partisanship == 1 for judge in self.judges)
+        return self._partisan_counts[0]
 
     @property
     def republican_judges(self) -> int:
-        return sum(judge.partisanship == -1 for judge in self.judges)
+        return self._partisan_counts[1]
 
     @property
     def partisanship(self) -> int:
