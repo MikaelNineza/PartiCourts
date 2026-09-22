@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import { ChevronDown, Github, Info, Layers, Scale, X } from 'lucide-react';
 
@@ -123,6 +123,21 @@ function App() {
   const [featureCount, setFeatureCount] = useState(null);
   const selectedCourt = COURT_TYPES[courtType];
   const selectedMode = MODES[mode];
+  const modeRef = useRef(mode);
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
+  const styleFeature = useCallback(
+    (feature) => ({
+      color: '#24342f',
+      weight: 1.1,
+      opacity: 0.9,
+      fillColor: getFillColor(feature, modeRef.current),
+      fillOpacity: 0.72,
+    }),
+    [],
+  );
 
   useEffect(() => {
     const map = L.map(mapElement.current, { zoomControl: false, minZoom: 3 }).setView([39.8283, -98.5795], 4);
@@ -147,13 +162,7 @@ function App() {
       .then((data) => {
         layerInstance.current?.remove();
         const layer = L.geoJSON(data, {
-          style: (feature) => ({
-            color: '#24342f',
-            weight: 1.1,
-            opacity: 0.9,
-            fillColor: getFillColor(feature, mode),
-            fillOpacity: 0.72,
-          }),
+          style: styleFeature,
           onEachFeature: (feature, featureLayer) => {
             featureLayer.bindPopup(getPopupContent(feature.properties ?? {}, courtType === 'circuit'));
             featureLayer.on({
@@ -169,7 +178,11 @@ function App() {
         if (error.name !== 'AbortError') console.error(error);
       });
     return () => controller.abort();
-  }, [courtType, mode, selectedCourt]);
+  }, [courtType, selectedCourt, styleFeature]);
+
+  useEffect(() => {
+    layerInstance.current?.setStyle(styleFeature);
+  }, [mode, styleFeature]);
 
   const mapStatus = useMemo(() => {
     if (featureCount === null) return 'Loading court boundaries';
