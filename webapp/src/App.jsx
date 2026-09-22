@@ -5,11 +5,11 @@ import { ChevronDown, Github, Info, Layers, Scale, X } from 'lucide-react';
 const COURT_TYPES = {
   district: {
     label: 'District courts',
-    path: '/sources/dc_usable.geojson',
+    path: `${import.meta.env.BASE_URL}sources/dc_usable.geojson`,
   },
   circuit: {
     label: 'Circuit courts',
-    path: '/sources/cc_usable.geojson',
+    path: `${import.meta.env.BASE_URL}sources/cc_usable.geojson`,
   },
 };
 
@@ -192,7 +192,7 @@ function App() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="PartiCourts home">
+        <a className="brand" href={import.meta.env.BASE_URL} aria-label="PartiCourts home">
           <span className="brand-mark"><Scale size={18} strokeWidth={2.5} /></span>
           <span>Parti<span>Courts</span></span>
         </a>
