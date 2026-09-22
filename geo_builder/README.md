@@ -8,8 +8,8 @@ From the repository root:
 . .venv/bin/activate
 python -m geo_builder \
   --snapshot data/courts.json \
-  --district-boundaries PrepareData/sources/dc_boundaries.geojson \
-  --circuit-boundaries PrepareData/sources/cc_boundaries.geojson
+  --district-boundaries boundaries/dc_boundaries.geojson \
+  --circuit-boundaries boundaries/cc_boundaries.geojson
 ```
 
 The default output is `webapp/public/sources/`.

@@ -17,12 +17,31 @@ OUTPUT_PROPERTIES = (
 )
 
 
+CIRCUIT_NAME_ALIASES = {
+    "1ST": "FIRST",
+    "2ND": "SECOND",
+    "3RD": "THIRD",
+    "4TH": "FOURTH",
+    "5TH": "FIFTH",
+    "6TH": "SIXTH",
+    "7TH": "SEVENTH",
+    "8TH": "EIGHTH",
+    "9TH": "NINTH",
+    "10TH": "TENTH",
+    "11TH": "ELEVENTH",
+    "DC": "DISTRICT OF COLUMBIA",
+}
+
+
 def _normal_name(value: Any) -> str:
-    return " ".join(str(value or "").upper().replace(".", "").split())
+    normalized = " ".join(str(value or "").upper().replace(".", "").split())
+    first_word, separator, rest = normalized.partition(" ")
+    alias = CIRCUIT_NAME_ALIASES.get(first_word)
+    return f"{alias}{separator}{rest}" if alias else normalized
 
 
-def _court_properties(court: dict[str, Any], boundary_name: str, fid: Any = None) -> dict[str, Any]:
-    properties = {
+def _court_properties(court: dict[str, Any], boundary_name: str) -> dict[str, Any]:
+    return {
         "NAME": boundary_name,
         "CHIEF_JUDGE": court.get("chief_judge", ""),
         "ACTIVE_JUDGES": court.get("active_judges", 0),
@@ -34,9 +53,6 @@ def _court_properties(court: dict[str, Any], boundary_name: str, fid: Any = None
         "DEMRETIRING": court.get("dem_retiring", 0),
         "GOPRETIRING": court.get("gop_retiring", 0),
     }
-    if fid is not None:
-        properties["FID"] = fid
-    return properties
 
 
 def build_geojson(
@@ -46,8 +62,10 @@ def build_geojson(
     *,
     strict: bool = True,
 ) -> dict[str, Any]:
+    if court_type not in ("district", "circuit"):
+        raise ValueError(f"Unsupported court type: {court_type!r}")
+
     court_list = list(courts)
-    by_id = {str(court.get("id")): court for court in court_list}
     by_name = {_normal_name(court.get("name")): court for court in court_list}
     features = []
     unmatched: list[str] = []
@@ -55,16 +73,8 @@ def build_geojson(
     for feature in boundaries.get("features", []):
         source_properties = feature.get("properties") or {}
         boundary_name = str(source_properties.get("NAME", ""))
-        if court_type == "district":
-            court = by_id.get(str(source_properties.get("FID")))
-            properties = _court_properties(
-                court or {}, boundary_name, source_properties.get("FID")
-            )
-        elif court_type == "circuit":
-            court = by_name.get(_normal_name(boundary_name))
-            properties = _court_properties(court or {}, boundary_name)
-        else:
-            raise ValueError(f"Unsupported court type: {court_type!r}")
+        court = by_name.get(_normal_name(boundary_name))
+        properties = _court_properties(court or {}, boundary_name)
 
         if court is None:
             unmatched.append(boundary_name)
