@@ -129,6 +129,7 @@ function App() {
   const [isModeMenuOpen, setIsModeMenuOpen] = useState(false);
   const [featureCount, setFeatureCount] = useState(null);
   const [dataDate, setDataDate] = useState(null);
+  const dataCache = useRef({});
   const selectedCourt = COURT_TYPES[courtType];
   const selectedMode = MODES[mode];
   const modeRef = useRef(mode);
@@ -160,6 +161,30 @@ function App() {
 
   useEffect(() => {
     if (!mapInstance.current) return undefined;
+
+    const applyData = (data) => {
+      layerInstance.current?.remove();
+      const layer = L.geoJSON(data, {
+        style: styleFeature,
+        onEachFeature: (feature, featureLayer) => {
+          featureLayer.bindPopup(getPopupContent(feature.properties ?? {}, courtType === 'circuit'));
+          featureLayer.on({
+            mouseover: (event) => event.target.setStyle({ weight: 2.5, color: '#17221f', fillOpacity: 0.9 }),
+            mouseout: (event) => layer.resetStyle(event.target),
+          });
+        },
+      }).addTo(mapInstance.current);
+      layerInstance.current = layer;
+      setFeatureCount(data.features?.length ?? 0);
+      setDataDate(formatDataDate(data.generated_at));
+    };
+
+    const cached = dataCache.current[courtType];
+    if (cached) {
+      applyData(cached);
+      return undefined;
+    }
+
     const controller = new AbortController();
     setFeatureCount(null);
     setDataDate(null);
@@ -169,20 +194,8 @@ function App() {
         return response.json();
       })
       .then((data) => {
-        layerInstance.current?.remove();
-        const layer = L.geoJSON(data, {
-          style: styleFeature,
-          onEachFeature: (feature, featureLayer) => {
-            featureLayer.bindPopup(getPopupContent(feature.properties ?? {}, courtType === 'circuit'));
-            featureLayer.on({
-              mouseover: (event) => event.target.setStyle({ weight: 2.5, color: '#17221f', fillOpacity: 0.9 }),
-              mouseout: (event) => layer.resetStyle(event.target),
-            });
-          },
-        }).addTo(mapInstance.current);
-        layerInstance.current = layer;
-        setFeatureCount(data.features?.length ?? 0);
-        setDataDate(formatDataDate(data.generated_at));
+        dataCache.current[courtType] = data;
+        applyData(data);
       })
       .catch((error) => {
         if (error.name !== 'AbortError') console.error(error);
