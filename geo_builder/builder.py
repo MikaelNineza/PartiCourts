@@ -60,6 +60,7 @@ def build_geojson(
     courts: Iterable[dict[str, Any]],
     court_type: str,
     *,
+    generated_at: str | None = None,
     strict: bool = True,
 ) -> dict[str, Any]:
     if court_type not in ("district", "circuit"):
@@ -94,6 +95,7 @@ def build_geojson(
         "type": boundaries.get("type", "FeatureCollection"),
         "name": "dcourts" if court_type == "district" else "ccourts",
         "crs": boundaries.get("crs"),
+        "generated_at": generated_at,
         "features": features,
     }
 
@@ -108,6 +110,7 @@ def build_from_snapshot(
 ) -> tuple[Path, Path]:
     snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
     courts = snapshot["courts"]
+    generated_at = snapshot.get("generated_at")
     district_boundaries = json.loads(district_boundaries_path.read_text(encoding="utf-8"))
     circuit_boundaries = json.loads(circuit_boundaries_path.read_text(encoding="utf-8"))
     output_directory.mkdir(parents=True, exist_ok=True)
@@ -119,8 +122,8 @@ def build_from_snapshot(
     district_courts = [court for court in courts if not court.get("is_circuit")]
     circuit_courts = [court for court in courts if court.get("is_circuit")]
     output_data = (
-        build_geojson(district_boundaries, district_courts, "district", strict=strict),
-        build_geojson(circuit_boundaries, circuit_courts, "circuit", strict=strict),
+        build_geojson(district_boundaries, district_courts, "district", generated_at=generated_at, strict=strict),
+        build_geojson(circuit_boundaries, circuit_courts, "circuit", generated_at=generated_at, strict=strict),
     )
     for output_path, data in zip(outputs, output_data):
         output_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")

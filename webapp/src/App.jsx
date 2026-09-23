@@ -89,6 +89,13 @@ function getFillColor(feature, mode) {
   return '#a63d3d';
 }
 
+function formatDataDate(isoString) {
+  if (!isoString) return null;
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(date);
+}
+
 function escapeHtml(value) {
   return String(value ?? 'Not reported')
     .replaceAll('&', '&amp;')
@@ -121,6 +128,7 @@ function App() {
   const [isCourtMenuOpen, setIsCourtMenuOpen] = useState(false);
   const [isModeMenuOpen, setIsModeMenuOpen] = useState(false);
   const [featureCount, setFeatureCount] = useState(null);
+  const [dataDate, setDataDate] = useState(null);
   const selectedCourt = COURT_TYPES[courtType];
   const selectedMode = MODES[mode];
   const modeRef = useRef(mode);
@@ -154,6 +162,7 @@ function App() {
     if (!mapInstance.current) return undefined;
     const controller = new AbortController();
     setFeatureCount(null);
+    setDataDate(null);
     fetch(selectedCourt.path, { signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error(`Unable to load ${selectedCourt.label}`);
@@ -173,6 +182,7 @@ function App() {
         }).addTo(mapInstance.current);
         layerInstance.current = layer;
         setFeatureCount(data.features?.length ?? 0);
+        setDataDate(formatDataDate(data.generated_at));
       })
       .catch((error) => {
         if (error.name !== 'AbortError') console.error(error);
@@ -186,8 +196,9 @@ function App() {
 
   const mapStatus = useMemo(() => {
     if (featureCount === null) return 'Loading court boundaries';
-    return `${featureCount} mapped ${courtType === 'district' ? 'districts' : 'circuits'}`;
-  }, [courtType, featureCount]);
+    const summary = `${featureCount} mapped ${courtType === 'district' ? 'districts' : 'circuits'}`;
+    return dataDate ? `${summary} · Data as of ${dataDate}` : summary;
+  }, [courtType, dataDate, featureCount]);
 
   return (
     <main className="app-shell">

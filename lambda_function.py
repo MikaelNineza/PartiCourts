@@ -47,12 +47,13 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     circuit_boundaries = _get_json(s3, bucket, f"{_BOUNDARIES_PREFIX}cc_boundaries.geojson")
 
     snapshot_dict = collect_snapshot().to_dict()
+    generated_at = snapshot_dict["generated_at"]
     courts = snapshot_dict["courts"]
     district_courts = [court for court in courts if not court.get("is_circuit")]
     circuit_courts = [court for court in courts if court.get("is_circuit")]
 
-    district_geojson = build_geojson(district_boundaries, district_courts, "district")
-    circuit_geojson = build_geojson(circuit_boundaries, circuit_courts, "circuit")
+    district_geojson = build_geojson(district_boundaries, district_courts, "district", generated_at=generated_at)
+    circuit_geojson = build_geojson(circuit_boundaries, circuit_courts, "circuit", generated_at=generated_at)
 
     run_date = datetime.now(UTC).strftime("%Y-%m-%d")
     _put_json(s3, bucket, f"{_SNAPSHOTS_PREFIX}courts-{run_date}.json", snapshot_dict)
