@@ -126,5 +126,8 @@ def build_from_snapshot(
         build_geojson(circuit_boundaries, circuit_courts, "circuit", generated_at=generated_at, strict=strict),
     )
     for output_path, data in zip(outputs, output_data):
-        output_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        # Compact, not indent=2: these files are almost entirely coordinate
+        # arrays, where pretty-printing triples the size for no benefit
+        # (nobody reads this JSON by eye, and it's fetched by the browser).
+        output_path.write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
     return outputs

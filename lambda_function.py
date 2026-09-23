@@ -35,7 +35,10 @@ def _get_json(s3: Any, bucket: str, key: str) -> dict[str, Any]:
 
 
 def _put_json(s3: Any, bucket: str, key: str, data: dict[str, Any]) -> None:
-    body = (json.dumps(data, indent=2) + "\n").encode("utf-8")
+    # Compact, not pretty-printed: the GeoJSON outputs are mostly coordinate
+    # arrays, where indentation roughly triples the size for no benefit --
+    # this is what the webapp actually downloads on every page load.
+    body = json.dumps(data, separators=(",", ":")).encode("utf-8")
     s3.put_object(Bucket=bucket, Key=key, Body=body, ContentType="application/json")
 
 
