@@ -9,6 +9,8 @@ An interactive map of U.S. federal district and circuit courts: partisan balance
 - **`webapp/`**: Vite + React + Leaflet frontend that renders the map.
 - **`boundaries/`**: raw district/circuit boundary GeoJSON, the input to `geo_builder`.
 - **`data/`**: the scraper's generated snapshot (`courts.json`).
+- **`lambda_function.py`**: AWS Lambda entry point that runs the scraper and geo_builder against S3 instead of local files.
+- **`scripts/build_lambda_package.sh`**: builds the Lambda deployment zip.
 
 Data flows one way. The scraper produces `data/courts.json`, then `geo_builder` combines it with `boundaries/` to produce `webapp/public/sources/*.geojson`, which the webapp reads to draw the map.
 
@@ -44,6 +46,8 @@ npm run dev
 
 ## Deployment
 
-Pushing to `main` builds the webapp and deploys it to S3 + CloudFront, via `.github/workflows/deploy.yml`. The scraper and geo_builder run separately, on a monthly schedule, as a Lambda function (see `docs/aws-architecture.md`).
+Pushing to `main` builds the webapp and deploys it to S3 + CloudFront, via `.github/workflows/deploy.yml`.
+
+The scraper and geo_builder run separately, on AWS: an EventBridge schedule invokes a Lambda function (`lambda_function.py`) monthly, which reads the boundary files from S3, runs the scraper and geo_builder in memory, and writes the resulting snapshot and GeoJSON back to S3. The webapp and the data share the same S3 bucket and CloudFront distribution, so `/sources/*.geojson` resolves to whatever the Lambda last wrote. A CloudWatch alarm notifies on Lambda failures.
 
 The `static` branch's GitHub Pages workflow is no longer active; it's kept around for history.
