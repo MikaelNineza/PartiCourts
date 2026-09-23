@@ -39,7 +39,15 @@ def _put_json(s3: Any, bucket: str, key: str, data: dict[str, Any]) -> None:
     # arrays, where indentation roughly triples the size for no benefit --
     # this is what the webapp actually downloads on every page load.
     body = json.dumps(data, separators=(",", ":")).encode("utf-8")
-    s3.put_object(Bucket=bucket, Key=key, Body=body, ContentType="application/json")
+    s3.put_object(
+        Bucket=bucket,
+        Key=key,
+        Body=body,
+        ContentType="application/json",
+        # This data only changes once a month; a day of caching lets repeat
+        # visits skip the network entirely without risking stale data for long.
+        CacheControl="public, max-age=86400",
+    )
 
 
 def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
