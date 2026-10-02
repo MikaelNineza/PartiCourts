@@ -6,6 +6,7 @@ from typing import Any, Iterable
 
 OUTPUT_PROPERTIES = (
     "CHIEF_JUDGE",
+    "SUPERVISING_JUSTICE",
     "ACTIVE_JUDGES",
     "SENIOR_ELIGIBLE_JUDGES",
     "VACANCIES",
@@ -40,10 +41,17 @@ def _normal_name(value: Any) -> str:
     return f"{alias}{separator}{rest}" if alias else normalized
 
 
+def _chief_judge(court: dict[str, Any]) -> str:
+    if court.get("chief_judge"):
+        return court["chief_judge"]
+    return next((judge["name"] for judge in court.get("judges", []) if judge.get("is_chief")), "")
+
+
 def _court_properties(court: dict[str, Any], boundary_name: str) -> dict[str, Any]:
     return {
         "NAME": boundary_name,
-        "CHIEF_JUDGE": court.get("chief_judge", ""),
+        "CHIEF_JUDGE": _chief_judge(court),
+        "SUPERVISING_JUSTICE": court.get("supervising_justice", ""),
         "ACTIVE_JUDGES": court.get("active_judges", 0),
         "SENIOR_ELIGIBLE_JUDGES": court.get("senior_eligible_judges", 0),
         "VACANCIES": court.get("vacancies", 0),

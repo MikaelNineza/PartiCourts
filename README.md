@@ -124,14 +124,12 @@ A manual smoke test: start the app with `npm run dev`, then confirm that the map
 
 - No automated tests. The scraper depends on the layout of Wikipedia and uscourts.gov pages, so a change on either site can break it without any test noticing.
 - Retirement data is matched to judges by name, so a name that is written differently on the two sources will be missed.
-- On circuit courts, the popup shows "Not reported" for both the chief judge and the supervising justice. The chief judge is blank for every circuit in the scraped data. The supervising justice is scraped correctly but the GeoJSON builder never passes it through to the map files.
 - The "Filled vacancies" view assumes the sitting president is Republican. This is a constant in `webapp/src/App.jsx` (`CURRENT_PRESIDENT_PARTY`) and has to be edited by hand after an election.
 - The map uses OpenStreetMap's public tile server, which is fine for a small project but not meant for heavy traffic.
 
 ## To-do
 
 - [ ] Add tests for the scraper (name matching, senior-eligibility rules, president classification) and the GeoJSON builder
-- [ ] Fix the circuit court popup so the chief judge and supervising justice show up
 - [ ] Set the current president from data instead of a hard-coded constant
 - [ ] Store scraped data in a database instead of a JSON snapshot (the scraper is already structured so one can be added)
 

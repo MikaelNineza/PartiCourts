@@ -25,12 +25,12 @@ This writes `dc_usable.geojson` and `cc_usable.geojson` to `webapp/public/source
 
 ## What it does
 
-For each shape in a boundary file, it finds the matching court in the snapshot by name and copies the court's numbers onto the shape as properties: chief judge, active judges, senior-eligible judges, vacancies, Democratic and Republican judge counts, the overall partisanship, and Democratic and Republican retirements. It also carries over the snapshot's `generated_at` date, which the web app shows as "Data as of."
+For each shape in a boundary file, it finds the matching court in the snapshot by name and copies the court's numbers onto the shape as properties: chief judge, supervising justice (circuit courts), active judges, senior-eligible judges, vacancies, Democratic and Republican judge counts, the overall partisanship, and Democratic and Republican retirements. It also carries over the snapshot's `generated_at` date, which the web app shows as "Data as of."
 
 Names are normalized before matching, so differences like "1st" and "First" or stray periods do not cause misses.
 
 ## Things to know
 
 - By default the run fails if any boundary shape has no matching court. This is on purpose, so a naming mismatch cannot silently leave a court blank on the map. Use `--allow-unmatched` only when you want to skip them.
-- The supervising justice for circuit courts is in the snapshot but is not currently written to the output, so the web app cannot show it.
+- If a court has no chief judge recorded, the builder uses the judge marked as chief in that court's list.
 - The code is in [builder.py](builder.py).

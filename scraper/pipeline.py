@@ -34,6 +34,8 @@ def collect_snapshot(
     current_year = datetime.now(UTC).year
     for court in courts:
         court.judges = wikipedia.fetch_judges(court)
+        if not court.chief_judge:
+            court.chief_judge = next((judge.name for judge in court.judges if judge.is_chief), "")
         court.senior_eligible_judges = sum(
             is_senior_eligible(judge.year_of_birth, judge.appointment_year, current_year)
             for judge in court.judges
