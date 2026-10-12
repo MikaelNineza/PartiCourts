@@ -127,6 +127,7 @@ function App() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isCourtMenuOpen, setIsCourtMenuOpen] = useState(false);
   const [isModeMenuOpen, setIsModeMenuOpen] = useState(false);
+  const hoverMenu = (setOpen) => ({ onPointerEnter: (e) => e.pointerType === 'mouse' && setOpen(true), onPointerLeave: () => setOpen(false), onKeyDown: (e) => e.key === 'Escape' && setOpen(false) });
   const [featureCount, setFeatureCount] = useState(null);
   const [dataDate, setDataDate] = useState(null);
   const dataCache = useRef({});
@@ -229,7 +230,7 @@ function App() {
       <section className="map-stage" aria-label="Interactive map of U.S. federal courts">
         <div ref={mapElement} className="map" />
         <div className="control-dock">
-          <div className="control-group">
+          <div className="control-group" {...hoverMenu(setIsCourtMenuOpen)}>
             <span className="control-label"><Layers size={14} /> Court layer</span>
             <div className="select-wrap">
               <button className="select-button" onClick={() => setIsCourtMenuOpen((open) => !open)} aria-expanded={isCourtMenuOpen}>{selectedCourt.label}<ChevronDown size={16} /></button>
@@ -237,7 +238,7 @@ function App() {
             </div>
           </div>
           <div className="control-divider" />
-          <div className="control-group mode-control">
+          <div className="control-group mode-control" {...hoverMenu(setIsModeMenuOpen)}>
             <span className="control-label">View mode</span>
             <div className="select-wrap">
               <button className="select-button" onClick={() => setIsModeMenuOpen((open) => !open)} aria-expanded={isModeMenuOpen}>{selectedMode.label}<ChevronDown size={16} /></button>

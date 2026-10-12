@@ -47,13 +47,14 @@ button { border: 0; cursor: pointer; }
 
 .control-dock, .legend, .map-status, .attribution-note { z-index: 500; position: absolute; }
 .eyebrow { margin: 0 0 10px; color: #9b614f; font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
-.control-dock { bottom: 36px; left: 42px; display: flex; align-items: stretch; padding: 14px 16px; color: var(--ink); background: rgba(246, 244, 237, .95); border: 1px solid rgba(24, 40, 36, .12); border-radius: 4px; box-shadow: 0 10px 28px rgba(24, 40, 36, .16); }
+.control-dock { top: 92px; left: 42px; display: flex; align-items: stretch; padding: 14px 16px; color: var(--ink); background: rgba(246, 244, 237, .95); border: 1px solid rgba(24, 40, 36, .12); border-radius: 4px; box-shadow: 0 10px 28px rgba(24, 40, 36, .16); }
 .control-group { min-width: 172px; }
 .control-label { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; color: #81796b; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
 .select-wrap { position: relative; }
 .select-button { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 3px 0; color: var(--ink); background: transparent; font-size: 14px; font-weight: 700; text-align: left; }
 .select-button svg { color: #a47a45; }
-.menu { position: absolute; bottom: calc(100% + 12px); left: -10px; min-width: 190px; padding: 5px; background: var(--paper); border: 1px solid var(--line); border-radius: 3px; box-shadow: 0 10px 24px rgba(24, 40, 36, .18); }
+.menu { position: absolute; top: calc(100% + 8px); z-index: 600; left: -10px; min-width: 190px; padding: 5px; background: var(--paper); border: 1px solid var(--line); border-radius: 3px; box-shadow: 0 10px 24px rgba(24, 40, 36, .18); }
+.menu::before { position: absolute; inset: -10px 0 auto; height: 10px; content: ''; }
 .menu button { display: block; width: 100%; padding: 9px 10px; color: var(--ink); background: transparent; font-size: 13px; text-align: left; border-radius: 2px; }
 .menu button:hover, .menu button.active { background: #e4dfd2; }
 .control-divider { width: 1px; margin: 3px 18px; background: var(--line); }
@@ -85,8 +86,8 @@ button { border: 0; cursor: pointer; }
   .about-button svg { width: 18px; height: 18px; }
   .map-stage { min-height: 760px; height: 100vh; padding-top: 62px; }
   .map { inset: 62px 0 0; }
-  .map-status { top: 72px; right: 18px; font-size: 10px; }
-  .control-dock { right: 16px; bottom: 22px; left: 16px; justify-content: space-between; padding: 12px; }
+  .map-status { top: 150px; right: 18px; font-size: 10px; }
+  .control-dock { top: 74px; right: 16px; left: 16px; justify-content: space-between; padding: 12px; }
   .control-group { min-width: 0; flex: 1; }
   .control-divider { margin: 3px 12px; }
   .select-button { min-height: 36px; font-size: 12px; }
