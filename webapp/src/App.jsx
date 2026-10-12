@@ -105,7 +105,15 @@ function escapeHtml(value) {
     .replaceAll("'", '&#039;');
 }
 
-function getPopupContent(properties, isCircuit) {
+const ORDINALS = { FIRST: '1st', SECOND: '2nd', THIRD: '3rd', FOURTH: '4th', FIFTH: '5th', SIXTH: '6th', SEVENTH: '7th', EIGHTH: '8th', NINTH: '9th', TENTH: '10th', ELEVENTH: '11th' };
+
+function formatCircuitName(name) {
+  const [first, ...rest] = String(name ?? '').split(' ');
+  if (ORDINALS[first.toUpperCase()]) return `${ORDINALS[first.toUpperCase()]} ${rest.join(' ').toLowerCase().replace(/^./, (c) => c.toUpperCase())}`;
+  return String(name ?? '').toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase());
+}
+
+function getPopupContent(properties, isCircuit, accent) {
   const retirements = getNumber(properties.DEMRETIRING) + getNumber(properties.GOPRETIRING);
   const rows = [
     ['Chief judge', properties.CHIEF_JUDGE],
@@ -115,7 +123,7 @@ function getPopupContent(properties, isCircuit) {
     ['Vacancies', properties.VACANCIES],
     ['Retirements', retirements],
   ];
-  return `<div class="court-popup"><p class="popup-kicker">Court profile</p><h3>${escapeHtml(properties.NAME)}</h3><dl>${rows.map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value)}</dd></div>`).join('')}</dl></div>`;
+  return `<div class="court-popup" style="border-top-color: ${accent}"><p class="popup-kicker">Court profile</p><h3>${escapeHtml(isCircuit ? formatCircuitName(properties.NAME) : properties.NAME)}</h3><dl>${rows.map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value)}</dd></div>`).join('')}</dl></div>`;
 }
 
 function App() {
@@ -168,7 +176,7 @@ function App() {
       const layer = L.geoJSON(data, {
         style: styleFeature,
         onEachFeature: (feature, featureLayer) => {
-          featureLayer.bindPopup(getPopupContent(feature.properties ?? {}, courtType === 'circuit'));
+          featureLayer.bindPopup(() => getPopupContent(feature.properties ?? {}, courtType === 'circuit', getFillColor(feature, modeRef.current)));
           featureLayer.on({
             mouseover: (event) => event.target.setStyle({ weight: 2.5, color: '#17221f', fillOpacity: 0.9 }),
             mouseout: (event) => layer.resetStyle(event.target),
